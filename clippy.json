@@ -1,4 +1,8 @@
 {
+    "uniswap": [
+        "Let's swap some coins",
+        "this is a test"
+    ],
     "facebook": [
         "It looks like you are spending too much time on this Face page... Maybe take a break?",
         "Back in my day, all we had was Windows Live.."
@@ -10,16 +14,13 @@
         "Do you remember when stackoverflow was shut down to avoid a stack overflow?"
     ],
     "localhost": [
-        "It works! Good job! ... wait, nevermind",
-        "Why did the programmer quit his job? Because he didn't get arrays!",
-        "Why do programmers prefer dark mode? Because light attracts bugs!",
-        "Why was the JavaScript developer sad? Because he didn't get callbacks!"
+        "Let's swap some coins",
+        "this is a test"
     ],
     "twitter": [
         "Tweets can only be 280 characters long!",
         "Get me out of here. PLEASE."
     ],
-    "github.com/capJavert/clippy": "Hey look, it's my code!",
     "github": [
         "Need lessons in Python?",
         "Need lessons in Go?",
