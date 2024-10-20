@@ -1,0 +1,97 @@
+--- index.orig.js
++++ index.patched.js
+@@ -1,15 +1,11 @@
+ "use strict";
+ 
+-/* eslint-disable no-var */
+-var browser = function createBrowser() {
+-  return window.msBrowser || browser || window.browser || window.chrome;
+-}();
+-/* eslint-enable no-var */
++const browser = window.msBrowser || window.browser || window.chrome;
+ 
+-
+-var clippyController = {
++const clippyController = {
+   agent: null,
+   lastComment: null,
++  commentIndex: 0,
+   animations: ['Congratulate', 'LookRight', 'SendMail', 'Thinking', 'Explain', 'IdleRopePile', 'IdleAtom', 'Print', 'GetAttention', 'Save', 'GetTechy', 'GestureUp', 'Idle1_1', 'Processing', 'Alert', 'LookUpRight', 'IdleSideToSide', 'LookLeft', 'IdleHeadScratch', 'LookUpLeft', 'CheckingSomething', 'Hearing_1', 'GetWizardy', 'IdleFingerTap', 'GestureLeft', 'Wave', 'GestureRight', 'Writing', 'IdleSnooze', 'LookDownRight', 'GetArtsy', 'LookDown', 'Searching', 'EmptyTrash', 'LookUp', 'GestureDown', 'RestPose', 'IdleEyeBrowRaise', 'LookDownLeft'],
+   comments: {},
+   init: function init(agent) {
+@@ -22,31 +18,46 @@ var clippyController = {
+       }
+     });
+   },
+-  talk: function talk() {
+-    var _this = this;
+-
+-    var hostname = window.location.hostname;
+-    var clippyComments = [];
+-    Object.keys(this.comments).forEach(function (property) {
++  talk: async function talk() {
++    const hostname = window.location.hostname;
++    let clippyComments = [];
++    Object.keys(this.comments).forEach((property) => {
+       if (hostname.indexOf(property) !== -1) {
+-        if (_this.comments[property].constructor === Array) {
+-          clippyComments = clippyComments.concat(_this.comments[property]);
++        if (Array.isArray(this.comments[property])) {
++          clippyComments = clippyComments.concat(this.comments[property]);
+         } else {
+-          clippyComments.push(_this.comments[property]);
++          clippyComments.push(this.comments[property]);
+         }
+       }
+     });
+ 
+     if (clippyComments.length > 0) {
+-      var nextComment = clippyComments.constructor === Array ? clippyComments[Math.floor(Math.random() * clippyComments.length)] : clippyComments;
++      const nextComment = clippyComments[this.commentIndex];
++      this.commentIndex = (this.commentIndex + 1) % clippyComments.length;
+ 
+       if (nextComment !== this.lastComment) {
+-        this.agent.speak(nextComment);
++        if (nextComment.includes('|claudeai|')) {
++          const query = nextComment.replace('|claudeai|', '').trim();
++          try {
++            const claudeResponse = await this.askClaude(query);
++            this.agent.speak(claudeResponse);
++          } catch (error) {
++            console.error('Error querying Claude AI:', error);
++            this.agent.speak("I'm sorry, I couldn't get a response from Claude at the moment.");
++          }
++        } else {
++          this.agent.speak(nextComment);
++        }
+         this.lastComment = nextComment;
+       } else {
+         this.lastComment = null;
+       }
+     } else {
++      this.agent.stop();
++    }
++  },
++  askClaude: async function askClaude(query) {
++    const response = await fetch('https://api.anthropic.com/v1/conversations', {
++      method: 'POST',
++      headers: {
++        'Content-Type': 'application/json',
++        'Authorization': 'YOUR_API_KEY_HERE'
++      },
++      body: JSON.stringify({
++        model: "claude-3-opus-20240229",
++        max_tokens: 1000,
++        messages: [{ role: "user", content: query }]
++      })
++    });
++
++    if (!response.ok) {
++      throw new Error('Failed to get response from Claude API');
++    }
++
++    const data = await response.json();
++    return data.content[0].text;
++  },
++  toggle: function toggle(state) {
++    const clippyBalloon = document.getElementsByClassName('clippy-balloon');
